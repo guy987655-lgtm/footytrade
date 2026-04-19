@@ -144,7 +144,7 @@ export default function MarketPage() {
   const [sort, setSort] = useState<SortField>('price_desc');
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const limit = 24;
+  const limit = 40;
 
   const queryParams = useMemo(() => {
     const p: Record<string, string | number> = { page, limit };
@@ -304,7 +304,7 @@ export default function MarketPage() {
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {players.map((player) => {
               const livePrice = prices[player.id] ?? player.currentPrice;
               const initials = getInitials(player.firstName, player.lastName, player.name);

@@ -26,7 +26,7 @@ export class PlayersService {
       sortBy = 'name',
       order = 'asc',
       page = 1,
-      limit = 20,
+      limit = 50,
     } = filters;
 
     const where: Prisma.PlayerWhereInput = {};
