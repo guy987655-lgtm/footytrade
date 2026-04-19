@@ -1,8 +1,17 @@
-FROM node:20-alpine
+FROM node:20-slim
+
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install dependencies (build context is repo root)
+# Default env vars (can be overridden in Railway Variables)
+ENV DATABASE_URL="file:./dev.db"
+ENV JWT_SECRET="footytrade-super-secret-jwt-key-2024"
+ENV INITIAL_CREDITS="10000"
+ENV FEE_PERCENT="1.5"
+ENV NODE_ENV="production"
+
+# Install dependencies
 COPY backend/package.json ./
 RUN npm install
 
