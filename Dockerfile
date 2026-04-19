@@ -15,5 +15,5 @@ RUN npx prisma generate
 # Build NestJS
 RUN npm run build
 
-# Run migrations, seed, start
-CMD npx prisma migrate deploy && npx prisma db seed && node dist/main
+# Run migrations, seed (ignore if already seeded), then start
+CMD npx prisma migrate deploy && (npx prisma db seed || true) && node dist/main
