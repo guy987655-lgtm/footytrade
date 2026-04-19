@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  googleId      String?  @unique
+  role          String   @default("USER")
+  credits       Float    @default(10000)
+  referralCode  String   @unique @default(uuid())
+  referredById  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  referredBy      User?           @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals       User[]          @relation("UserReferrals")
+  portfolio       PortfolioItem[]
+  transactions    Transaction[]
+  orders          Order[]
+  watchlist       WatchlistItem[]
+  referralsMade   ReferralBonus[] @relation("Referrer")
+  referralsEarned ReferralBonus[] @relation("Referee")
+}
+
+model Player {
+  id           String   @id @default(uuid())
+  externalId   Int?     @unique
+  name         String
+  position     String
+  team         String
+  league       String   @default("")
+  photoUrl     String   @default("")
+  footyRating  Float    @default(50)
+  currentPrice Float    @default(100)
+  totalShares  Float    @default(1000)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  stats        PlayerStats[]
+  priceHistory PriceHistory[]
+  portfolio    PortfolioItem[]
+  transactions Transaction[]
+  orders       Order[]
+  watchlist    WatchlistItem[]
+}
+
+model PlayerStats {
+  id        String   @id @default(uuid())
+  playerId  String
+  date      DateTime
+  goals     Int      @default(0)
+  assists   Int      @default(0)
+  minutes   Int      @default(0)
+  keyPasses Int      @default(0)
+  xG        Float    @default(0)
+  rating    Float    @default(0)
+  createdAt DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@unique([playerId, date])
+}
+
+model PriceHistory {
+  id        String   @id @default(uuid())
+  playerId  String
+  price     Float
+  timestamp DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@index([playerId, timestamp])
+}
+
+model PortfolioItem {
+  id          String @id @default(uuid())
+  userId      String
+  playerId    String
+  shares      Float
+  avgBuyPrice Float
+
+  user   User   @relation(fields: [userId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@unique([userId, playerId])
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  userId        String
+  playerId      String
+  side          String
+  shares        Float
+  pricePerShare Float
+  fee           Float
+  total         Float
+  createdAt     DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+model Order {
+  id         String   @id @default(uuid())
+  userId     String
+  playerId   String
+  side       String
+  type       String
+  shares     Float
+  limitPrice Float?
+  filledQty  Float    @default(0)
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@index([playerId, side, status])
+}
+
+model ReferralBonus {
+  id         String    @id @default(uuid())
+  referrerId String
+  refereeId  String
+  status     String    @default("PENDING")
+  awardedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id])
+  referee  User @relation("Referee", fields: [refereeId], references: [id])
+
+  @@unique([referrerId, refereeId])
+}
+
+model WatchlistItem {
+  id       String @id @default(uuid())
+  userId   String
+  playerId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@unique([userId, playerId])
+}
+
+model AdminSetting {
+  key   String @id
+  value String
+}
